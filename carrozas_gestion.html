@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Gestión de Carrozas</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #0f0f1b; --gold: #d4af37; --slate: #1c1c2e; --w: #ffffff; }
+        body { background: var(--ink); color: var(--w); font-family: 'DM Sans', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: var(--slate); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        h1 { color: var(--gold); font-size: 24px; margin-bottom: 20px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 5px; }
+        input, select { 
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;
+        }
+        input:focus { border-color: var(--gold); }
+
+        .btn-add { 
+            width: 100%; padding: 15px; background: var(--gold); color: var(--ink); 
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: var(--gold); text-decoration: none; font-size: 14px; }
+        
+        #status { margin-top: 15px; text-align: center; font-size: 14px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Registrar Nueva Carroza</h1>
+        <div id="status"></div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>ID Interno (ej: C1)</label>
+                <input type="text" id="id-car" placeholder="C1">
+            </div>
+            <div class="form-group">
+                <label>Código JR</label>
+                <input type="text" id="cod-car" placeholder="JR-001">
+            </div>
+            <div class="form-group">
+                <label>Placa</label>
+                <input type="text" id="placa" placeholder="XYZ-123">
+            </div>
+            <div class="form-group">
+                <label>Kilometraje Actual</label>
+                <input type="number" id="km" placeholder="0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Descripción / Modelo</label>
+            <input type="text" id="desc" placeholder="Ej: Mercedes Benz 2024">
+        </div>
+
+        <div class="form-group">
+            <label>Regional</label>
+            <select id="regional">
+                <option value="Central">Central</option>
+                <option value="Norte">Norte</option>
+                <option value="Sur">Sur</option>
+            </select>
+        </div>
+
+        <button class="btn-add" id="btn-save" onclick="guardarCarroza()">Guardar Vehículo</button>
+    </div>
+    
+    <a href="dashboard.html" class="back-link">← Volver al Panel</a>
+</div>
+
+<script src="db.js"></script>
+<script>
+    async function guardarCarroza() {
+        const btn = document.getElementById('btn-save');
+        const st = document.getElementById('status');
+        
+        const nuevaCarroza = {
+            id: document.getElementById('id-car').value,
+            codigo: document.getElementById('cod-car').value,
+            placa: document.getElementById('placa').value,
+            desc: document.getElementById('desc').value,
+            regional: document.getElementById('regional').value,
+            km: document.getElementById('km').value,
+            estado: 'disponible', // Por defecto sale disponible
+            anio: new Date().getFullYear(),
+            obs: 'Registro inicial'
+        };
+
+        if(!nuevaCarroza.id || !nuevaCarroza.placa) {
+            alert("Completa el ID y la Placa");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Guardando...";
+
+        const res = await DB.guardar('carrozas', nuevaCarroza);
+        
+        st.style.display = "block";
+        st.innerText = "✅ Carroza guardada con éxito en el Excel.";
+        st.style.color = "#2ecc71";
+        
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>

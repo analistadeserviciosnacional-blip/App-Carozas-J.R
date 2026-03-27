@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Reportar Avería</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #0f0f1b; --gold: #d4af37; --slate: #1c1c2e; --w: #ffffff; }
+        body { background: var(--ink); color: var(--w); font-family: 'DM Sans', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 450px; margin: 0 auto; }
+        .card { background: var(--slate); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        h1 { color: #ff6b6b; font-size: 22px; margin-bottom: 5px; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 8px; }
+        
+        select, input, textarea { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.3); color: white; font-size: 16px; outline: none; box-sizing: border-box;
+        }
+        textarea { height: 100px; resize: none; }
+        select:focus, input:focus, textarea:focus { border-color: #ff6b6b; }
+
+        .btn-report { 
+            width: 100%; padding: 16px; border-radius: 12px; border: none; 
+            background: #ff6b6b; color: white; font-weight: 700; font-size: 16px; cursor: pointer; 
+        }
+        #msg { padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Reportar Problema</h1>
+        <p style="color:rgba(255,255,255,0.5); font-size: 14px; margin-bottom:20px;">Informa sobre fallas técnicas o estéticas.</p>
+
+        <div id="msg"></div>
+
+        <div class="form-group">
+            <label>Seleccionar Carroza</label>
+            <select id="carroza_id"><option>Cargando...</option></select>
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Falla</label>
+            <select id="tipo">
+                <option value="Mecánica">Mecánica (Motor/Frenos)</option>
+                <option value="Eléctrica">Eléctrica (Luces/Batería)</option>
+                <option value="Estética">Estética (Golpe/Limpieza)</option>
+                <option value="Llantas">Llantas / Suspensión</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Prioridad</label>
+            <select id="prioridad">
+                <option value="Baja">Baja (Puede circular)</option>
+                <option value="Media">Media (Atender pronto)</option>
+                <option value="Alta">Alta (FUERA DE SERVICIO)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Descripción del Problema</label>
+            <textarea id="desc" placeholder="Describe qué sucede..."></textarea>
+        </div>
+
+        <button class="btn-report" id="btn-save" onclick="enviarReporte()">Enviar Reporte</button>
+    </div>
+    <a href="dashboard.html" style="display:block; text-align:center; margin-top:20px; color:var(--gold); text-decoration:none;">Cancelar</a>
+</div>
+
+<script src="db.js"></script>
+<script>
+    const user = JSON.parse(sessionStorage.getItem('jr_user'));
+    
+    window.onload = async () => {
+        const select = document.getElementById('carroza_id');
+        const res = await DB.leer('carrozas');
+        if (res.ok) {
+            select.innerHTML = res.datos.map(c => `<option value="${c.id}">${c.codigo} - ${c.placa}</option>`).join('');
+        }
+    };
+
+    async function enviarReporte() {
+        const btn = document.getElementById('btn-save');
+        const idCarroza = document.getElementById('carroza_id').value;
+        const prioridad = document.getElementById('prioridad').value;
+
+        const data = {
+            id: 'ERR-' + Date.now(),
+            carroza_id: idCarroza,
+            tipo: document.getElementById('tipo').value,
+            prioridad: prioridad,
+            descripcion: document.getElementById('desc').value,
+            fecha: new Date().toLocaleDateString(),
+            conductor: user ? user.nombre : 'Anónimo',
+            estado: 'Pendiente'
+        };
+
+        if(!data.descripcion) return alert("Por favor describe la falla");
+
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        // 1. Guardamos el reporte
+        await DB.guardar('averias', data);
+
+        // 2. Si la prioridad es ALTA, ponemos la carroza en "mantenimiento" automáticamente
+        if (prioridad === 'Alta') {
+            await DB.actualizar('carrozas', idCarroza, { estado: 'mantenimiento' });
+        }
+
+        document.getElementById('msg').style.display = "block";
+        document.getElementById('msg').style.background = "rgba(255, 107, 107, 0.2)";
+        document.getElementById('msg').style.color = "#ff6b6b";
+        document.getElementById('msg').innerText = "✅ Reporte enviado al administrador.";
+
+        setTimeout(() => window.location.href = 'dashboard.html', 2000);
+    }
+</script>
+</body>
+</html>

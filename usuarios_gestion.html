@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Gestión de Usuarios</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #0f0f1b; --gold: #d4af37; --slate: #1c1c2e; --w: #ffffff; }
+        body { background: var(--ink); color: var(--w); font-family: 'DM Sans', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--slate); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        h1 { color: var(--gold); font-size: 22px; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 5px; }
+        input, select { 
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;
+        }
+
+        .btn-save { 
+            width: 100%; padding: 15px; background: var(--gold); color: var(--ink); 
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px;
+        }
+        #status { margin-top: 15px; text-align: center; display: none; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Registrar Usuario</h1>
+        <div id="status"></div>
+        
+        <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+        </div>
+
+        <div class="form-group">
+            <label>Usuario (Para el Login)</label>
+            <input type="text" id="user" placeholder="ej: jperez">
+        </div>
+
+        <div class="form-group">
+            <label>Rol de Acceso</label>
+            <select id="rol">
+                <option value="conductor">Conductor (Solo registros)</option>
+                <option value="admin">Administrador (Acceso total)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Contraseña (PIN)</label>
+            <input type="password" id="pass" placeholder="Mínimo 4 dígitos">
+        </div>
+
+        <div class="form-group">
+            <label>Sede / Regional</label>
+            <input type="text" id="sede" placeholder="Ej: Sede Norte">
+        </div>
+
+        <button class="btn-save" id="btn-save" onclick="guardarUsuario()">Crear Usuario</button>
+    </div>
+    <a href="dashboard.html" style="display:block; text-align:center; margin-top:20px; color:var(--gold); text-decoration:none; font-size: 14px;">← Volver al Dashboard</a>
+</div>
+
+<script src="db.js"></script>
+<script>
+    async function guardarUsuario() {
+        const btn = document.getElementById('btn-save');
+        const st = document.getElementById('status');
+        
+        const nuevoUser = {
+            id: 'U-' + Date.now(),
+            nombre: document.getElementById('nombre').value,
+            usuario: document.getElementById('user').value.toLowerCase().trim(),
+            rol: document.getElementById('rol').value,
+            sede: document.getElementById('sede').value,
+            pass: document.getElementById('pass').value,
+            estado: 'activo' // Por defecto entran activos
+        };
+
+        if(!nuevoUser.nombre || !nuevoUser.usuario || !nuevoUser.pass) {
+            alert("Por favor rellena todos los campos.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Registrando...";
+
+        const res = await DB.guardar('usuarios', nuevoUser);
+        
+        st.style.display = "block";
+        st.className = "success";
+        st.innerText = "✅ Usuario creado correctamente en el Excel.";
+        
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>

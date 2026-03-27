@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Control de Carrozas</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #0f0f1b; --gold: #d4af37; --slate: #1c1c2e; --w: #ffffff; }
+        
+        body { 
+            background: var(--ink); 
+            color: var(--w); 
+            font-family: 'DM Sans', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+
+        .login-card { 
+            background: var(--slate); 
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 100%; 
+            max-width: 360px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            text-align: center; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo { 
+            font-size: 28px; 
+            font-weight: 700; 
+            color: var(--gold); 
+            margin-bottom: 10px; 
+            letter-spacing: -1px; 
+        }
+
+        p { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 30px; }
+        
+        .role-selector { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            background: rgba(0,0,0,0.2); 
+            padding: 5px; 
+            border-radius: 12px; 
+        }
+
+        .role-btn { 
+            flex: 1; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: none; 
+            background: transparent; 
+            color: white; 
+            cursor: pointer; 
+            font-size: 13px; 
+            transition: 0.3s; 
+            font-weight: 500;
+        }
+
+        .role-btn.active { 
+            background: var(--gold); 
+            color: var(--ink); 
+            font-weight: 700; 
+        }
+
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(255,255,255,0.05); 
+            color: white; 
+            box-sizing: border-box; 
+            outline: none; 
+            transition: 0.3s; 
+            font-size: 15px;
+        }
+
+        input:focus { 
+            border-color: var(--gold); 
+            background: rgba(255,255,255,0.1); 
+        }
+        
+        .btn-enter { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 12px; 
+            border: none; 
+            background: var(--gold); 
+            color: var(--ink); 
+            font-weight: 700; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            transition: 0.2s;
+        }
+
+        .btn-enter:hover { opacity: 0.9; }
+        .btn-enter:active { transform: scale(0.98); }
+        .btn-enter:disabled { background: #555; cursor: not-allowed; }
+
+        #error-msg { 
+            color: #ff6b6b; 
+            font-size: 13px; 
+            margin-top: 15px; 
+            display: none; 
+            background: rgba(255, 107, 107, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo">J.R. CARROZAS</div>
+    <p>Gestión de Traslados y Salidas</p>
+
+    <div class="role-selector">
+        <button type="button" class="role-btn active" id="btn-admin" onclick="setRole('admin', this)">Admin</button>
+        <button type="button" class="role-btn" id="btn-conductor" onclick="setRole('conductor', this)">Conductor</button>
+    </div>
+
+    <input type="text" id="user" placeholder="Usuario" autocomplete="username">
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password">
+    
+    <button class="btn-enter" id="btn-login" onclick="handleLogin()">Ingresar</button>
+    
+    <div id="error-msg">Usuario o clave incorrectos</div>
+</div>
+
+<script src="db.js"></script>
+
+<script>
+    let currentRole = 'admin';
+
+    // Cambiar entre Admin y Conductor
+    function setRole(role, btn) {
+        currentRole = role;
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('error-msg').style.display = 'none';
+    }
+
+    // Ejecutar login al presionar Enter
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') handleLogin();
+    });
+
+    async function handleLogin() {
+        const u = document.getElementById('user').value.trim();
+        const p = document.getElementById('pass').value.trim();
+        const err = document.getElementById('error-msg');
+        const btn = document.getElementById('btn-login');
+        
+        if (!u || !p) {
+            err.innerText = "Escribe tu usuario y contraseña";
+            err.style.display = 'block';
+            return;
+        }
+
+        // Estado visual de carga
+        err.style.display = 'none';
+        btn.disabled = true;
+        btn.innerText = "Verificando...";
+
+        try {
+            // Llamada a la función en db.js
+            const user = await DB.login(u, p, currentRole);
+            
+            if (user) {
+                // Éxito: El objeto user ya se guardó en sessionStorage dentro de db.js
+                window.location.href = 'dashboard.html';
+            } else {
+                // Fallo
+                btn.disabled = false;
+                btn.innerText = "Ingresar";
+                err.innerText = "Usuario o clave incorrectos";
+                err.style.display = 'block';
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerText = "Ingresar";
+            alert("Error crítico: No se pudo conectar con la base de datos.");
+            console.error(e);
+        }
+    }
+</script>
+
+</body>
+</html>

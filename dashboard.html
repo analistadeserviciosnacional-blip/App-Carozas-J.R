@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Panel Maestro de Carrozas</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --ink: #0f0f1b; 
+            --gold: #d4af37; 
+            --gold-dim: rgba(212, 175, 55, 0.1);
+            --slate: #1c1c2e; 
+            --w: #ffffff; 
+            --red: #ff4d4d; 
+            --green: #2ecc71; 
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        body { background: var(--ink); color: var(--w); font-family: 'DM Sans', sans-serif; margin: 0; padding: 20px; }
+        
+        /* HEADER PROFESIONAL CON LOGO */
+        .header-main { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: var(--slate); 
+            padding: 20px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.03);
+            margin-bottom: 30px;
+        }
+        
+        #logo-container { height: 50px; }
+        #logo-img { height: 100%; object-fit: contain; }
+        .no-logo { color: var(--gold); font-size: 24px; font-weight: 700; }
+
+        .user-block { text-align: right; }
+        .user-name { color: var(--gold); font-weight: 500; font-size: 15px; }
+        .user-role { font-size: 12px; opacity: 0.5; text-transform: uppercase; }
+        
+        .logout { 
+            display: inline-block;
+            color: var(--red); 
+            text-decoration: none; 
+            font-size: 11px; 
+            font-weight: bold; 
+            border: 1px solid rgba(255,77,77,0.3); 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            margin-top: 5px;
+            transition: 0.3s;
+        }
+        .logout:hover { background: rgba(255,77,77,0.1); border-color: var(--red); }
+
+        /* REJILLA DE MENÚ CON ESTILO */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .card { 
+            background: var(--slate); 
+            padding: 25px; 
+            border-radius: 18px; 
+            text-decoration: none; 
+            color: white; 
+            transition: 0.3s ease; 
+            border: 1px solid rgba(255,255,255,0.03); 
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: var(--shadow); }
+        
+        .card-icon { font-size: 30px; margin-bottom: 15px; display: block; }
+        .card h3 { margin: 0; font-size: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
+        .card p { margin: 8px 0 0; font-size: 11px; opacity: 0.6; line-height: 1.4;}
+
+        .card-report { border-color: rgba(255,77,77,0.2); }
+        .card-report h3 { color: var(--red); }
+        .card-config { border-color: rgba(255,255,255,0.1); }
+        .card-config h3 { color: white; opacity: 0.8; }
+
+        .admin-only { display: none; } /* Ocultar para conductores */
+
+        /* TABLA DE ESTADO CON ESTILO PROFESIONAL */
+        .monitor-section { margin-top: 30px; }
+        .monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        .table-container { 
+            background: var(--slate); 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: var(--shadow);
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; padding: 18px; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.01); }
+
+        .car-code { color: var(--gold); font-weight: 700; font-size: 15px; }
+        .car-desc { font-size: 11px; opacity: 0.5; }
+
+        /* PILLS DE ESTADO */
+        .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
+        .dot { width: 7px; height: 7px; border-radius: 50%; }
+        
+        .ruta-pill { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); }
+        .ruta-pill .dot { background: var(--gold); animation: pulse 1.5s infinite; box-shadow: 0 0 10px var(--gold); }
+
+        .libre-pill { background: rgba(46, 204, 113, 0.05); color: var(--green); border: 1px solid rgba(46, 204, 113, 0.2); }
+        .libre-pill .dot { background: var(--green); }
+
+        .taller-pill { background: rgba(255, 77, 77, 0.05); color: var(--red); border: 1px solid rgba(255,77,77,0.2); }
+        .taller-pill .dot { background: var(--red); }
+
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div class="header-main">
+        <div id="logo-container">
+            <div class="no-logo">J.R. CARROZAS</div>
+        </div>
+        <div class="user-block">
+            <div class="user-name" id="display-name">...</div>
+            <div class="user-role" id="display-role">...</div>
+            <a href="#" class="logout" onclick="logout()">CERRAR SESIÓN</a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <a href="registro_salida.html" class="card">
+            <span class="card-icon">🚚</span>
+            <h3>Salidas</h3>
+            <p>Iniciar nuevo traslado de servicio</p>
+        </a>
+        <a href="registro_llegada.html" class="card">
+            <span class="card-icon">🏁</span>
+            <h3>Llegadas</h3>
+            <p>Finalizar y liberar vehículo</p>
+        </a>
+        <a href="reporte_averia.html" class="card card-report">
+            <span class="card-icon">⚠️</span>
+            <h3>Reportar</h3>
+            <p>Informar falla técnica o estética</p>
+        </a>
+
+        <a href="taller_gestion.html" class="card admin-only">
+            <span class="card-icon">🔧</span>
+            <h3>Taller</h3>
+            <p>Gestionar reparaciones y bajas</p>
+        </a>
+        <a href="carrozas_gestion.html" class="card admin-only">
+            <span class="card-icon">🚘</span>
+            <h3>Flota</h3>
+            <p>Configurar y añadir vehículos</p>
+        </a>
+        <a href="config_sistema.html" class="card admin-only card-config">
+            <span class="card-icon">⚙️</span>
+            <h3>Configurar</h3>
+            <p>Logo, Sede y Parámetros</p>
+        </a>
+    </div>
+
+    <div class="monitor-section">
+        <div class="monitor-header">
+            <h3 style="margin:0; font-size: 19px; font-weight: 500;">Monitor de Flota en Vivo</h3>
+            <div style="font-size:12px; opacity:0.5;">Actualización automática cada 15s</div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehículo</th>
+                        <th>Placa</th>
+                        <th>Kilometraje</th>
+                        <th>Estado Actual</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-flota">
+                    <tr><td colspan="4" style="text-align:center; padding: 60px; opacity: 0.3; font-size:13px;">Sincronizando con la nube...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        // --- 1. SEGURIDAD Y CARGA DE LOGO ---
+        const user = JSON.parse(sessionStorage.getItem('jr_user'));
+        if (!user) window.location.href = 'index.html';
+
+        // Cargar logo desde localStorage (guardado en config_sistema.html)
+        const savedLogo = localStorage.getItem('jr_logo_url');
+        const logoContainer = document.getElementById('logo-container');
+        if (savedLogo && savedLogo !== "") {
+            logoContainer.innerHTML = `<img src="${savedLogo}" id="logo-img" alt="Logo J.R.">`;
+        }
+
+        // Mostrar datos del usuario
+        document.getElementById('display-name').innerText = user.nombre;
+        document.getElementById('display-role').innerText = `${user.rol} / ${user.sede || 'Regional'}`;
+
+        // --- 2. CONTROL DE ROLES ---
+        if (user.rol.toLowerCase() === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        }
+
+        // --- 3. FUNCIONES ---
+        function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+        // MONITOR REAL-TIME
+        async function actualizarMonitor() {
+            try {
+                const res = await DB.leer('carrozas');
+                const tbody = document.getElementById('tabla-flota');
+                
+                if (!res.ok || res.datos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; opacity:0.5;">No hay vehículos.</td></tr>';
+                    return;
+                }
+
+                const lista = res.datos.sort((a, b) => {
+                    const orden = { "en ruta": 1, "mantenimiento": 2, "disponible": 3 };
+                    return (orden[a.estado.toLowerCase()] || 4) - (orden[b.estado.toLowerCase()] || 4);
+                });
+
+                tbody.innerHTML = lista.map(c => {
+                    const est = (c.estado || 'disponible').toLowerCase();
+                    let clasePill = 'libre-pill', texto = 'Disponible';
+
+                    if (est === 'en ruta') { clasePill = 'ruta-pill'; texto = 'En Ruta'; }
+                    if (est === 'mantenimiento') { clasePill = 'taller-pill'; texto = 'En Taller'; }
+
+                    return `
+                        <tr>
+                            <td><div class="car-code">${c.codigo}</div><div class="car-desc">${c.desc || ''}</div></td>
+                            <td style="font-family:monospace; font-size:15px; letter-spacing:1px;">${c.placa}</td>
+                            <td><strong>${Number(c.km || 0).toLocaleString()}</strong> <small style="opacity:0.5">KM</small></td>
+                            <td>
+                                <div class="status-pill ${clasePill}">
+                                    <div class="dot"></div>
+                                    ${texto}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                document.getElementById('tabla-flota').innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red); padding:30px;">Error de sincronización.</td></tr>';
+            }
+        }
+
+        actualizarMonitor();
+        setInterval(actualizarMonitor, 15000); // 15s
+    </script>
+</body>
+</html>

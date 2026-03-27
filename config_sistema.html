@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.R. — Configuración del Sistema</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #0f0f1b; --gold: #d4af37; --slate: #1c1c2e; --w: #ffffff; }
+        body { background: var(--ink); color: var(--w); font-family: 'DM Sans', sans-serif; margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .config-card { background: var(--slate); padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        h1 { color: var(--gold); font-size: 24px; margin-bottom: 10px; font-weight: 700; }
+        p { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 30px; }
+        
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;}
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 15px; }
+        input:focus { border-color: var(--gold); background: rgba(0,0,0,0.3); }
+
+        .preview-container { margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+        #logo-preview { max-height: 50px; max-width: 100%; object-fit: contain; display: none; }
+        .no-preview { font-size: 12px; opacity: 0.4; color: white; }
+
+        .btn-save { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--gold); color: var(--ink); font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .btn-save:hover { opacity: 0.9; }
+        .btn-save:active { transform: scale(0.98); }
+
+        .back { display: block; margin-top: 25px; color: var(--gold); text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="config-card">
+    <h1>Configuración</h1>
+    <p>Personaliza la identidad visual de la App</p>
+
+    <div class="form-group">
+        <label>URL del Logo de la Empresa (Tipo Foto)</label>
+        <input type="url" id="logo-url" placeholder="https://sitio.com/mi-logo.png" oninput="previewLogo()">
+        <div class="preview-container">
+            <img src="" id="logo-preview" alt="Vista previa">
+            <div class="no-preview" id="no-preview-text">Vista previa del logo</div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Nombre de la Empresa</label>
+        <input type="text" id="empresa-nombre" placeholder="J.R. Carrozas">
+    </div>
+
+    <button class="btn-save" onclick="guardarConfig()">Guardar Cambios</button>
+    <a href="dashboard.html" class="back">← Volver al Panel</a>
+</div>
+
+<script>
+    // Cargar config actual
+    window.onload = () => {
+        const savedLogo = localStorage.getItem('jr_logo_url');
+        if (savedLogo) {
+            document.getElementById('logo-url').value = savedLogo;
+            previewLogo();
+        }
+    };
+
+    function previewLogo() {
+        const url = document.getElementById('logo-url').value;
+        const img = document.getElementById('logo-preview');
+        const text = document.getElementById('no-preview-text');
+
+        if (url && url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/) != null) {
+            img.src = url;
+            img.style.display = 'block';
+            text.style.display = 'none';
+        } else {
+            img.style.display = 'none';
+            text.style.display = 'block';
+        }
+    }
+
+    function guardarConfig() {
+        const url = document.getElementById('logo-url').value;
+        localStorage.setItem('jr_logo_url', url); // Guardado local rápido
+        alert("✅ Configuración guardada en este dispositivo.");
+        window.location.href = 'dashboard.html';
+    }
+</script>
+
+</body>
+</html>
